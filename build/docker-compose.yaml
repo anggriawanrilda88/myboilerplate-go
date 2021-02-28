@@ -1,25 +1,22 @@
 version: '3'
 services:
 
-  go-boilerplate:
+  myboilerplate:
     restart: always
     build:
       args:
         - "SRV_UID=${SRV_UID}"
         - "SRV_GID=${SRV_GID}"
-      context: ../../../boilerplate
+      context: ../../myboilerplate
       dockerfile: build/dev/Dockerfile
     volumes:
-      - ../../../boilerplate/:/go/src/github.com/anggri-microservice/boilerplate
+      - ../../myboilerplate/:/go/src/github.com/anggriawanrilda88/myboilerplate
       - go-modules:/go/pkg/mod
     environment:
       - "GO_ENV=development"
       - "SRV_DC_ONLINE=${SRV_DC_ONLINE}"
-      #- "SERVICES_GRPC_PORT=${SERVICES_GRPC_PORT}"
-      #- "JAEGER_AGENT_HOST=${JAEGER_AGENT_HOST}"
-      #- "JAEGER_AGENT_PORT=${JAEGER_AGENT_PORT}"
     ports:
-      - 7001:5000
+      - 9001:5000
 
 volumes:
   go-modules:

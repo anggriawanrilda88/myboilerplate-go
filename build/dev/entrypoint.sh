@@ -15,7 +15,7 @@ fi
 sudo chown -R anggri:anggri /go/pkg
 sudo chown -R anggri:anggri ./vendor
 
-export GOPRIVATE="github.com/anggri-microservice/*"
+export GOPRIVATE="github.com/anggriawanrilda88/*"
 export CGO_ENABLED="0"
 
 if [ "${COMPOSE_PROJECT_NAME}" = "emporia" ]; then
@@ -33,7 +33,7 @@ CompileDaemon \
     -color=true \
     -graceful-kill=true \
     -pattern="^(\.env.+|\.env)|(.+\.go|.+\.c)$" \
-    -build="go build -mod=vendor -o $SERVICE_NAME ./cmd/$SERVICE_NAME/..." \
+    -build="go build -mod=vendor -o $SERVICE_NAME ./app.go" \
     -command="./${SERVICE_NAME}"
 
 if [ "${COMPOSE_PROJECT_NAME}" = "emporia" ]; then

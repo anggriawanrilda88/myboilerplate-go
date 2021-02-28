@@ -1,7 +1,7 @@
 FROM golang:1.15-alpine
 ARG SRV_UID=1000
 ARG SRV_GID=1000
-ENV SERVICE_NAME users-service
+ENV SERVICE_NAME myboilerplate
 
 COPY build/assets/ghz /usr/local/bin
 COPY build/assets/repositories /etc/apk/repositories
@@ -21,7 +21,7 @@ RUN chmod 0400 /etc/sudoers && \
     adduser anggri sudo
 
 USER anggri
-WORKDIR "/go/src/github.com/anggri-microservice/${SERVICE_NAME}"
+WORKDIR "/go/src/github.com/anggriawanrilda88/${SERVICE_NAME}"
 
 COPY .netrc /tmp/.netrc
 
