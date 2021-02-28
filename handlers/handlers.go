@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"boilerplate/database"
-	"boilerplate/models"
+	"github.com/anggriawanrilda88/myboilerplate/database"
+	"github.com/anggriawanrilda88/myboilerplate/models"
 
 	"github.com/gofiber/fiber/v2"
 )

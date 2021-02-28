@@ -1,8 +1,8 @@
 package main
 
 import (
-	"boilerplate/database"
-	"boilerplate/handlers"
+	"github.com/anggriawanrilda88/myboilerplate/database"
+	"github.com/anggriawanrilda88/myboilerplate/handlers"
 
 	"flag"
 	"log"

@@ -1,9 +1,10 @@
 package database
 
 import (
-	"boilerplate/models"
 	"fmt"
 	"sync"
+
+	"github.com/anggriawanrilda88/myboilerplate/models"
 )
 
 var (
