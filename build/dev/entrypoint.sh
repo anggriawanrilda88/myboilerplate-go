@@ -33,7 +33,7 @@ CompileDaemon \
     -color=true \
     -graceful-kill=true \
     -pattern="^(\.env.+|\.env)|(.+\.go|.+\.c)$" \
-    -build="go build -mod=vendor -o $SERVICE_NAME ./app.go" \
+    -build="go build -mod=vendor -o $SERVICE_NAME ./main.go" \
     -command="./${SERVICE_NAME}"
 
 if [ "${COMPOSE_PROJECT_NAME}" = "emporia" ]; then
