@@ -12,5 +12,5 @@ func RegisterRoute(api fiber.Router) {
 
 func registerUsersV1(api fiber.Router) {
 	route := api.Group("/v1/users")
-	route.Get("/", customers.NewUsersController().FindAll)
+	route.Get("/", customers.NewUsersController().FindAll())
 }

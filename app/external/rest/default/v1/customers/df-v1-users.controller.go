@@ -1,6 +1,7 @@
 package customers
 
 import (
+	"errors"
 	"log"
 
 	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/default/v1"
@@ -9,7 +10,7 @@ import (
 
 // UsersController interface
 type UsersController interface {
-	FindAll(c *fiber.Ctx) error
+	FindAll() fiber.Handler
 }
 
 // NewUsersController Instantiate the Controller
@@ -24,11 +25,25 @@ type usersController struct {
 }
 
 // FindAll interface
-func (_c *usersController) FindAll(c *fiber.Ctx) (err error) {
-	err = _c.useCase.FindAll(c)
-	log.Println("Aku Controller")
-	return c.JSON(fiber.Map{
-		"success": true,
-		"user":    1,
-	})
+func (_c *usersController) FindAll() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		_ = _c.useCase.FindAll(ctx)
+		log.Println("Aku Controller")
+		users := fiber.Map{
+			"success": true,
+			"user":    1,
+		}
+		err := ctx.JSON(users)
+		err = errors.New("hahahahah")
+		// if err != nil {
+		// 	err = ctx.JSON(fiber.Map{
+		// 		"status":  500,
+		// 		"error":   "Internal Server Error",
+		// 		"message": "No message available",
+		// 		"code":    "/api/book/1",
+		// 	})
+		// 	// panic("Error occurred when returning JSON of users: " + err.Error())
+		// }
+		return err
+	}
 }
