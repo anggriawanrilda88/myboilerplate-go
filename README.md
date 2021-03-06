@@ -9,22 +9,40 @@
 
 ## Development
 
-### Start the application 
+### Add File .env 
 
+Copy file from .env.example to create .env for your local work 
 
-```bash
-go run app.go
-```
-
-
-## Production
+### Start the application from docker
 
 ```bash
-docker build -t gofiber .
+cd build
+docker-compose build --no-cache 
+docker-compose up
 docker run -d -p 3000:3000 gofiber
 ```
 
-Go to `http://localhost:3000`:
+### Start the application from local
 
+```bash
+go run main.go
+```
+
+## Production
+
+Not yet configuration
 
 ![Go Fiber Docker Boilerplate](./go_fiber_boilerplate.gif)
+
+## Feature
+
+Feature planning to embed for this boilerplate
+- DDD(Domain Driven Design) architecture
+- Auto Migration Db
+- Jwt Auth Basic
+- Request Validation
+- Redis/Elastic Cache
+- Logging System(With DB)
+- Unit Testing
+- Role Management
+- Default Error Handler And Custom Error Handler
