@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+
 	module "github.com/anggriawanrilda88/myboilerplate/app"
+	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
+	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/migration"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/middleware"
 	configuration "github.com/anggriawanrilda88/myboilerplate/config"
 	"github.com/gofiber/session/v2"
@@ -10,12 +14,24 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
+	"github.com/gofiber/fiber/v2/middleware/etag"
+	"github.com/gofiber/fiber/v2/middleware/expvar"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 )
 
 //App struct for app
 type App struct {
 	*fiber.App
+	DB *database.Database
 
 	Hasher  hashing.Driver
 	Session *session.Session
@@ -26,23 +42,44 @@ func main() {
 	app := App{
 		App:     fiber.New(*config.GetFiberConfig()),
 		Hasher:  hashing.New(config.GetHasherConfig()),
-		Session: session.New(),
+		Session: session.New(config.GetSessionConfig()),
 	}
 
 	// Add middleware
 	app.registerMiddlewares(config)
 
-	// // Add port connection
-	// port := config.Get("APP_ADDR").(string)
-
 	// Connected with database
+	db, err := database.New(&database.DbConfig{
+		Driver:   config.GetString("DB_DRIVER"),
+		Host:     config.GetString("DB_HOST"),
+		Username: config.GetString("DB_USERNAME"),
+		Password: config.GetString("DB_PASSWORD"),
+		Port:     config.GetInt("DB_PORT"),
+		Database: config.GetString("DB_DATABASE"),
+	})
+
+	// Auto-migrate database models
+	if err != nil {
+		fmt.Println("failed to connect to database:", err.Error())
+	} else {
+		if db == nil {
+			fmt.Println("failed to connect to database: db variable is nil")
+		} else {
+			err = migration.AutoMigratePostgres(db)
+			if err != nil {
+				fmt.Println("failed to automigrate role model:", err.Error())
+				return
+			}
+		}
+	}
 
 	// Create a /api endpoint from appFiber module
 	api := app.Group("/api")
-	module.RegisterRoute(api)
+	module.RegisterRoute(api, db)
 
 	// Listen on port from env
-	log.Fatal(app.Listen(config.GetString("APP_ADDR")))
+	port := config.GetString("APP_ADDR")
+	log.Fatal(app.Listen(port))
 }
 
 func (app *App) registerMiddlewares(config *configuration.Config) {
@@ -91,99 +128,99 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 
 	// TODO: Middleware - Basic Authentication
 
-	// // Middleware - Cache
-	// if config.GetBool("MW_FIBER_CACHE_ENABLED") {
-	// 	app.Use(cache.New(cache.Config{
-	// 		Expiration:   config.GetDuration("MW_FIBER_CACHE_EXPIRATION"),
-	// 		CacheControl: config.GetBool("MW_FIBER_CACHE_CACHECONTROL"),
-	// 	}))
-	// }
+	// Middleware - Cache
+	if config.GetBool("MW_FIBER_CACHE_ENABLED") {
+		app.Use(cache.New(cache.Config{
+			Expiration:   config.GetDuration("MW_FIBER_CACHE_EXPIRATION"),
+			CacheControl: config.GetBool("MW_FIBER_CACHE_CACHECONTROL"),
+		}))
+	}
 
-	// // Middleware - Compress
-	// if config.GetBool("MW_FIBER_COMPRESS_ENABLED") {
-	// 	lvl := compress.Level(config.GetInt("MW_FIBER_COMPRESS_LEVEL"))
-	// 	app.Use(compress.New(compress.Config{
-	// 		Level: lvl,
-	// 	}))
-	// }
+	// Middleware - Compress
+	if config.GetBool("MW_FIBER_COMPRESS_ENABLED") {
+		lvl := compress.Level(config.GetInt("MW_FIBER_COMPRESS_LEVEL"))
+		app.Use(compress.New(compress.Config{
+			Level: lvl,
+		}))
+	}
 
-	// // Middleware - CORS
-	// if config.GetBool("MW_FIBER_CORS_ENABLED") {
-	// 	app.Use(cors.New(cors.Config{
-	// 		AllowOrigins:     config.GetString("MW_FIBER_CORS_ALLOWORIGINS"),
-	// 		AllowMethods:     config.GetString("MW_FIBER_CORS_ALLOWMETHODS"),
-	// 		AllowHeaders:     config.GetString("MW_FIBER_CORS_ALLOWHEADERS"),
-	// 		AllowCredentials: config.GetBool("MW_FIBER_CORS_ALLOWCREDENTIALS"),
-	// 		ExposeHeaders:    config.GetString("MW_FIBER_CORS_EXPOSEHEADERS"),
-	// 		MaxAge:           config.GetInt("MW_FIBER_CORS_MAXAGE"),
-	// 	}))
-	// }
+	// Middleware - CORS
+	if config.GetBool("MW_FIBER_CORS_ENABLED") {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins:     config.GetString("MW_FIBER_CORS_ALLOWORIGINS"),
+			AllowMethods:     config.GetString("MW_FIBER_CORS_ALLOWMETHODS"),
+			AllowHeaders:     config.GetString("MW_FIBER_CORS_ALLOWHEADERS"),
+			AllowCredentials: config.GetBool("MW_FIBER_CORS_ALLOWCREDENTIALS"),
+			ExposeHeaders:    config.GetString("MW_FIBER_CORS_EXPOSEHEADERS"),
+			MaxAge:           config.GetInt("MW_FIBER_CORS_MAXAGE"),
+		}))
+	}
 
-	// // Middleware - CSRF
-	// if config.GetBool("MW_FIBER_CSRF_ENABLED") {
-	// 	app.Use(csrf.New(csrf.Config{
-	// 		TokenLookup: config.GetString("MW_FIBER_CSRF_TOKENLOOKUP"),
-	// 		Cookie: &fiber.Cookie{
-	// 			Name:     config.GetString("MW_FIBER_CSRF_COOKIE_NAME"),
-	// 			SameSite: config.GetString("MW_FIBER_CSRF_COOKIE_SAMESITE"),
-	// 		},
-	// 		CookieExpires: config.GetDuration("MW_FIBER_CSRF_COOKIE_EXPIRES"),
-	// 		ContextKey:    config.GetString("MW_FIBER_CSRF_CONTEXTKEY"),
-	// 	}))
-	// }
+	// Middleware - CSRF
+	if config.GetBool("MW_FIBER_CSRF_ENABLED") {
+		app.Use(csrf.New(csrf.Config{
+			TokenLookup: config.GetString("MW_FIBER_CSRF_TOKENLOOKUP"),
+			Cookie: &fiber.Cookie{
+				Name:     config.GetString("MW_FIBER_CSRF_COOKIE_NAME"),
+				SameSite: config.GetString("MW_FIBER_CSRF_COOKIE_SAMESITE"),
+			},
+			CookieExpires: config.GetDuration("MW_FIBER_CSRF_COOKIE_EXPIRES"),
+			ContextKey:    config.GetString("MW_FIBER_CSRF_CONTEXTKEY"),
+		}))
+	}
 
-	// // Middleware - ETag
-	// if config.GetBool("MW_FIBER_ETAG_ENABLED") {
-	// 	app.Use(etag.New(etag.Config{
-	// 		Weak: config.GetBool("MW_FIBER_ETAG_WEAK"),
-	// 	}))
-	// }
+	// Middleware - ETag
+	if config.GetBool("MW_FIBER_ETAG_ENABLED") {
+		app.Use(etag.New(etag.Config{
+			Weak: config.GetBool("MW_FIBER_ETAG_WEAK"),
+		}))
+	}
 
-	// // Middleware - Expvar
-	// if config.GetBool("MW_FIBER_EXPVAR_ENABLED") {
-	// 	app.Use(expvar.New())
-	// }
+	// Middleware - Expvar
+	if config.GetBool("MW_FIBER_EXPVAR_ENABLED") {
+		app.Use(expvar.New())
+	}
 
-	// // Middleware - Favicon
-	// if config.GetBool("MW_FIBER_FAVICON_ENABLED") {
-	// 	app.Use(favicon.New(favicon.Config{
-	// 		File:         config.GetString("MW_FIBER_FAVICON_FILE"),
-	// 		CacheControl: config.GetString("MW_FIBER_FAVICON_CACHECONTROL"),
-	// 	}))
-	// }
+	// Middleware - Favicon
+	if config.GetBool("MW_FIBER_FAVICON_ENABLED") {
+		app.Use(favicon.New(favicon.Config{
+			File:         config.GetString("MW_FIBER_FAVICON_FILE"),
+			CacheControl: config.GetString("MW_FIBER_FAVICON_CACHECONTROL"),
+		}))
+	}
 
-	// // TODO: Middleware - Filesystem
+	// TODO: Middleware - Filesystem
 
-	// // Middleware - Limiter
-	// if config.GetBool("MW_FIBER_LIMITER_ENABLED") {
-	// 	app.Use(limiter.New(limiter.Config{
-	// 		Max:      config.GetInt("MW_FIBER_LIMITER_MAX"),
-	// 		Duration: config.GetDuration("MW_FIBER_LIMITER_DURATION"),
-	// 		// TODO: Key
-	// 		// TODO: LimitReached
-	// 	}))
-	// }
+	// Middleware - Limiter
+	if config.GetBool("MW_FIBER_LIMITER_ENABLED") {
+		app.Use(limiter.New(limiter.Config{
+			Max:      config.GetInt("MW_FIBER_LIMITER_MAX"),
+			Duration: config.GetDuration("MW_FIBER_LIMITER_DURATION"),
+			// TODO: Key
+			// TODO: LimitReached
+		}))
+	}
 
-	// // Middleware - Monitor
-	// if config.GetBool("MW_FIBER_MONITOR_ENABLED") {
-	// 	app.Use(monitor.New())
-	// }
+	// Middleware - Monitor
+	if config.GetBool("MW_FIBER_MONITOR_ENABLED") {
+		app.Use(monitor.New())
+	}
 
-	// // Middleware - Pprof
-	// if config.GetBool("MW_FIBER_PPROF_ENABLED") {
-	// 	app.Use(pprof.New())
-	// }
+	// Middleware - Pprof
+	if config.GetBool("MW_FIBER_PPROF_ENABLED") {
+		app.Use(pprof.New())
+	}
 
-	// // TODO: Middleware - Proxy
+	// TODO: Middleware - Proxy
 
-	// // Middleware - RequestID
-	// if config.GetBool("MW_FIBER_REQUESTID_ENABLED") {
-	// 	app.Use(requestid.New(requestid.Config{
-	// 		Header: config.GetString("MW_FIBER_REQUESTID_HEADER"),
-	// 		// TODO: Generator
-	// 		ContextKey: config.GetString("MW_FIBER_REQUESTID_CONTEXTKEY"),
-	// 	}))
-	// }
+	// Middleware - RequestID
+	if config.GetBool("MW_FIBER_REQUESTID_ENABLED") {
+		app.Use(requestid.New(requestid.Config{
+			Header: config.GetString("MW_FIBER_REQUESTID_HEADER"),
+			// TODO: Generator
+			ContextKey: config.GetString("MW_FIBER_REQUESTID_CONTEXTKEY"),
+		}))
+	}
 
-	// // TODO: Middleware - Timeout
+	// TODO: Middleware - Timeout
 }

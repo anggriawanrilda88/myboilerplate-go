@@ -2,6 +2,7 @@ version: '3'
 services:
 
   myboilerplate:
+    network_mode: micro-compose_default
     restart: always
     build:
       args:

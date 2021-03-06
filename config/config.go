@@ -124,12 +124,12 @@ func (config *Config) setDefaults() {
 	config.SetDefault("APP_ENV", "local")
 
 	// Set default database configuration
-	config.SetDefault("DB_DRIVER", "mysql")
+	config.SetDefault("DB_DRIVER", "postgres")
 	config.SetDefault("DB_HOST", "localhost")
-	config.SetDefault("DB_USERNAME", "fiber")
-	config.SetDefault("DB_PASSWORD", "password")
-	config.SetDefault("DB_PORT", 3306)
-	config.SetDefault("DB_DATABASE", "boilerplate")
+	config.SetDefault("DB_USERNAME", "postgres")
+	config.SetDefault("DB_PASSWORD", "1qaz2wsx")
+	config.SetDefault("DB_PORT", 5433)
+	config.SetDefault("DB_DATABASE", "myboilerplate")
 
 	// Set default hasher configuration
 	config.SetDefault("HASHER_DRIVER", "argon2id")
@@ -141,13 +141,13 @@ func (config *Config) setDefaults() {
 	config.SetDefault("HASHER_ROUNDS", bcrypt.DefaultRounds)
 
 	// Set default session configuration
-	config.SetDefault("SESSION_PROVIDER", "mysql")
+	config.SetDefault("SESSION_PROVIDER", "postgres")
 	config.SetDefault("SESSION_KEYPREFIX", "session")
-	config.SetDefault("SESSION_HOST", "localhost")
-	config.SetDefault("SESSION_PORT", 3306)
-	config.SetDefault("SESSION_USERNAME", "fiber")
-	config.SetDefault("SESSION_PASSWORD", "secret")
-	config.SetDefault("SESSION_DATABASE", "boilerplate")
+	config.SetDefault("SESSION_HOST", "db-dev")
+	config.SetDefault("SESSION_PORT", 5433)
+	config.SetDefault("SESSION_USERNAME", "postgres")
+	config.SetDefault("SESSION_PASSWORD", "1qaz2wsx")
+	config.SetDefault("SESSION_DATABASE", "myboilerplate")
 	config.SetDefault("SESSION_TABLENAME", "sessions")
 	config.SetDefault("SESSION_LOOKUP", "cookie:session_id")
 	config.SetDefault("SESSION_DOMAIN", "")
@@ -387,7 +387,6 @@ func (config *Config) setFiberConfig() {
 		ETag:                      config.GetBool("FIBER_ETAG"),
 		BodyLimit:                 config.GetInt("FIBER_BODYLIMIT"),
 		Concurrency:               config.GetInt("FIBER_CONCURRENCY"),
-		Views:                     config.getFiberViewsEngine(),
 		ReadTimeout:               config.GetDuration("FIBER_READTIMEOUT"),
 		WriteTimeout:              config.GetDuration("FIBER_WRITETIMEOUT"),
 		IdleTimeout:               config.GetDuration("FIBER_IDLETIMEOUT"),
@@ -403,6 +402,7 @@ func (config *Config) setFiberConfig() {
 		DisableHeaderNormalizing:  config.GetBool("FIBER_DISABLEHEADERNORMALIZING"),
 		DisableStartupMessage:     config.GetBool("FIBER_DISABLESTARTUPMESSAGE"),
 		ReduceMemoryUsage:         config.GetBool("FIBER_REDUCEMEMORYUSAGE"),
+		// Views:                     config.getFiberViewsEngine(), // For web view
 	}
 }
 
