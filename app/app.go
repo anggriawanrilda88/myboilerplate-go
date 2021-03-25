@@ -13,5 +13,7 @@ func RegisterRoute(api fiber.Router, DB *database.Database) {
 
 func registerUsersV1(api fiber.Router, DB *database.Database) {
 	route := api.Group("/v1/users")
-	route.Get("/", customers.NewUsersController().GetAllUsers(DB))
+	// route.Get("/", customers.NewUsersController().GetAllUsers(DB))
+	// route.Get("/:id", customers.NewUsersController().GetUser(DB))
+	route.Post("/", customers.NewUsersController().AddUser(DB))
 }
