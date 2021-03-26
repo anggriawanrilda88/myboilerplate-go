@@ -37,10 +37,10 @@ Not yet configuration
 ## Feature
 
 Feature planning to embed for this boilerplate
-- DDD(Domain Driven Design) architecture
+- DDD(Domain Driven Design) architecture (complete)
 - Auto Migration Db
 - Jwt Auth Basic
-- Request Validation
+- Request Validation (complete)
 - Redis/Elastic Cache
 - Logging System(With DB)
 - Unit Testing
