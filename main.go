@@ -78,8 +78,7 @@ func main() {
 	}
 
 	// Create a /api endpoint from appFiber module
-	api := app.Group("/api")
-	module.RegisterRoute(api)
+	module.RegisterRoute(app.App, config.Viper)
 
 	// Listen on port from env
 	port := config.GetString("APP_ADDR")
@@ -129,8 +128,6 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 	if config.GetBool("MW_FIBER_RECOVER_ENABLED") {
 		app.Use(recover.New())
 	}
-
-	// TODO: Middleware - Basic Authentication
 
 	// Middleware - Cache
 	if config.GetBool("MW_FIBER_CACHE_ENABLED") {

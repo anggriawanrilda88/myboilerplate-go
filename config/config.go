@@ -264,8 +264,11 @@ func (config *Config) setDefaults() {
 	// Set default Fiber Pprof middleware configuration
 	config.SetDefault("MW_FIBER_PPROF_ENABLED", false)
 
+	// Set default Fiber Authentication middleware configuration
+	config.SetDefault("MW_FIBER_AUTHENTICATION_ENABLED", true)
+
 	// Set default Fiber Recover middleware configuration
-	config.SetDefault("MW_FIBER_RECOVER_ENABLED", true)
+	config.SetDefault("MW_FIBER_AUTH", true)
 
 	// Set default Fiber RequestID middleware configuration
 	config.SetDefault("MW_FIBER_REQUESTID_ENABLED", false)

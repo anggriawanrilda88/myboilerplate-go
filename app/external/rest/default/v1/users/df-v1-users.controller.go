@@ -12,7 +12,7 @@ import (
 type UsersController interface {
 	// GetAllUsers(DB *database.Database) fiber.Handler
 	// GetUser(DB *database.Database) fiber.Handler
-	AddUser() fiber.Handler
+	AddUser(api fiber.Router) fiber.Handler
 	// EditUser(DB *database.Database) fiber.Handler
 	// DeleteUser(DB *database.Database) fiber.Handler
 }
@@ -29,7 +29,7 @@ type usersController struct {
 }
 
 // AddUser a single user to the database
-func (fn *usersController) AddUser() fiber.Handler {
+func (fn *usersController) AddUser(api fiber.Router) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		//set body to struct
 		Body := new(models.User)
