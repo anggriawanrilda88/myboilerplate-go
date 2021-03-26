@@ -51,7 +51,7 @@ func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 // // Create usecase Users with transaction
 // func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 // 	// begin transaction
-// 	tx := fn.service.Transaction(DB)
+// 	tx := fn.service.Transaction()
 // 	if err := tx.Error; err != nil {
 // 		return err
 // 	}
