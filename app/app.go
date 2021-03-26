@@ -1,7 +1,7 @@
 package module
 
 import (
-	"github.com/anggriawanrilda88/myboilerplate/app/external/rest/default/v1/customers"
+	customers "github.com/anggriawanrilda88/myboilerplate/app/external/rest/default/v1/users"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/gofiber/fiber/v2"
 )

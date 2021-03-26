@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine
+FROM golang:1.15-alpine
 ARG SRV_UID=1000
 ARG SRV_GID=1000
 ENV SERVICE_NAME myboilerplate
