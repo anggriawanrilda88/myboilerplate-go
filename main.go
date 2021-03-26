@@ -32,7 +32,6 @@ import (
 //App struct for app
 type App struct {
 	*fiber.App
-	DB *database.Database
 
 	Hasher  hashing.Driver
 	Session *session.Session
@@ -80,7 +79,7 @@ func main() {
 
 	// Create a /api endpoint from appFiber module
 	api := app.Group("/api")
-	module.RegisterRoute(api, db)
+	module.RegisterRoute(api)
 
 	// Listen on port from env
 	port := config.GetString("APP_ADDR")

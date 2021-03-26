@@ -2,7 +2,6 @@ package customers
 
 import (
 	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/default/v1"
-	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
 	"github.com/asaskevich/govalidator"
 
@@ -13,7 +12,7 @@ import (
 type UsersController interface {
 	// GetAllUsers(DB *database.Database) fiber.Handler
 	// GetUser(DB *database.Database) fiber.Handler
-	AddUser(DB *database.Database) fiber.Handler
+	AddUser() fiber.Handler
 	// EditUser(DB *database.Database) fiber.Handler
 	// DeleteUser(DB *database.Database) fiber.Handler
 }
@@ -21,14 +20,34 @@ type UsersController interface {
 // NewUsersController Instantiate the Controller
 func NewUsersController() UsersController {
 	return &usersController{
-		useCase:      usecases.NewUsersUseCase(),
-		addUserModel: new(models.User),
+		usersUsecase: usecases.NewUsersUseCase(),
 	}
 }
 
 type usersController struct {
-	useCase      usecases.UsersUseCase
-	addUserModel *models.User
+	usersUsecase usecases.UsersUseCase
+}
+
+// AddUser a single user to the database
+func (fn *usersController) AddUser() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		//set body to struct
+		Body := new(models.User)
+		err := ctx.BodyParser(Body)
+		if err != nil {
+			return err
+		}
+
+		//validate request body
+		_, err = govalidator.ValidateStruct(Body)
+		if err != nil {
+			return err
+		}
+
+		//get usecase users
+		err = fn.usersUsecase.Create(ctx, Body)
+		return err
+	}
 }
 
 // // GetAllUsers Return all users as JSON
@@ -97,42 +116,6 @@ type usersController struct {
 // 		return err
 // 	}
 // }
-
-// Add a single user to the database
-func (fn *usersController) AddUser(DB *database.Database) fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		//set body to struct
-		err := ctx.BodyParser(fn.addUserModel)
-		if err != nil {
-			return err
-		}
-
-		//validate request body
-		_, err = govalidator.ValidateStruct(fn.addUserModel)
-		if err != nil {
-			return err
-		}
-
-		// if response := DB.Create(&User); response.Error != nil {
-		// 	panic("An error occurred when storing the new user: " + response.Error.Error())
-		// }
-		// // Match role to user
-		// if User.RoleID != 0 {
-		// 	Role := new(models.Role)
-		// 	if response := DB.Find(&Role, User.RoleID); response.Error != nil {
-		// 		panic("An error occurred when retrieving the role" + response.Error.Error())
-		// 	}
-		// 	if Role.ID != 0 {
-		// 		User.Role = *Role
-		// 	}
-		// }
-		// err := ctx.JSON(User)
-		// if err != nil {
-		// 	panic("Error occurred when returning JSON of a user: " + err.Error())
-		// }
-		return err
-	}
-}
 
 // // Edit a single user
 // func (_c *usersController) EditUser(DB *database.Database) fiber.Handler {

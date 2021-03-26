@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 // DbConfig for setting connection configuration
 type DbConfig struct {
 	Driver   string
@@ -27,21 +29,20 @@ type Database struct {
 
 // New connection function call on root go
 func New(config *DbConfig) (*Database, error) {
-	var db *gorm.DB
 	var err error
 	switch strings.ToLower(config.Driver) {
 	case "mysql":
 		dsn := config.Username + ":" + config.Password + "@tcp(" + config.Host + ":" + strconv.Itoa(config.Port) + ")/" + config.Database + "?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=UTC"
-		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 		break
 	case "postgresql", "postgres":
 		dsn := "user=" + config.Username + " password=" + config.Password + " dbname=" + config.Database + " host=" + config.Host + " port=" + strconv.Itoa(config.Port) + " TimeZone=UTC"
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		break
 	case "sqlserver", "mssql":
 		dsn := "sqlserver://" + config.Username + ":" + config.Password + "@" + config.Host + ":" + strconv.Itoa(config.Port) + "?database=" + config.Database
-		db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+		DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
 		break
 	}
-	return &Database{db}, err
+	return &Database{DB}, err
 }
