@@ -1,9 +1,12 @@
-package customers
+package users
 
 import (
+	"errors"
+
 	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/default/v1"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
-	"github.com/asaskevich/govalidator"
+	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
+	"github.com/go-playground/validator"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,7 +15,8 @@ import (
 type UsersController interface {
 	// GetAllUsers(DB *database.Database) fiber.Handler
 	// GetUser(DB *database.Database) fiber.Handler
-	AddUser(api fiber.Router) fiber.Handler
+	Create(api fiber.Router) fiber.Handler
+	LoginUser(api fiber.Router) fiber.Handler
 	// EditUser(DB *database.Database) fiber.Handler
 	// DeleteUser(DB *database.Database) fiber.Handler
 }
@@ -20,26 +24,31 @@ type UsersController interface {
 // NewUsersController Instantiate the Controller
 func NewUsersController() UsersController {
 	return &usersController{
-		usersUsecase: usecases.NewUsersUseCase(),
+		usersUsecase:  usecases.NewUsersUseCase(),
+		userTransform: NewUsersTransform(),
 	}
 }
 
 type usersController struct {
-	usersUsecase usecases.UsersUseCase
+	usersUsecase  usecases.UsersUseCase
+	userTransform UsersTransform
 }
 
-// AddUser a single user to the database
-func (fn *usersController) AddUser(api fiber.Router) fiber.Handler {
+var validate *validator.Validate
+
+// Create a single user to the database
+func (fn *usersController) Create(api fiber.Router) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		//set body to struct
 		Body := new(models.User)
 		err := ctx.BodyParser(Body)
 		if err != nil {
+			err = errors.New("Cannot unmarshal request body, wrong type data.")
 			return err
 		}
 
 		//validate request body
-		_, err = govalidator.ValidateStruct(Body)
+		err = validator.New().Struct(Body)
 		if err != nil {
 			return err
 		}
@@ -47,6 +56,32 @@ func (fn *usersController) AddUser(api fiber.Router) fiber.Handler {
 		//get usecase users
 		err = fn.usersUsecase.Create(ctx, Body)
 		return err
+	}
+}
+
+// Create a single user to the database
+func (fn *usersController) LoginUser(api fiber.Router) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		// set parameter
+		UserLogin := new(models.UserLogin)
+		User := new(models.User)
+
+		if err := ctx.BodyParser(UserLogin); err != nil {
+			return helper.ErrorHandler(ctx, fiber.ErrForbidden, 400, "Cannot unmarshal request body, wrong type data.")
+		}
+
+		// validate request body
+		if err := validator.New().Struct(UserLogin); err != nil {
+			return helper.ErrorHandler(ctx, fiber.ErrForbidden, 400, err.Error())
+		}
+
+		// get usecase users
+		if err := fn.usersUsecase.LoginUser(ctx, User, UserLogin); err != nil {
+			return helper.ErrorHandler(ctx, fiber.ErrForbidden, 400, err.Error())
+		}
+
+		transform := fn.userTransform.DetailTransform(ctx, fiber.Map{"user": User, "token": UserLogin.Token})
+		return ctx.JSON(transform)
 	}
 }
 

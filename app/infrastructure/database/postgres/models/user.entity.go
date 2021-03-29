@@ -3,13 +3,19 @@ package models
 import "gorm.io/gorm"
 
 type User struct {
-	Id        uint           `valid:"-" json:"id" gorm:"primarykey"`
-	Name      string         `valid:"alphanum" json:"name"`
-	Password  string         `valid:"alphanum" json:"password"`
-	Email     string         `valid:"email" json:"email"`
-	RoleID    string         `valid:"int" json:"roleId"`
-	CreatedAt string         `valid:"-" json:"createdAt"`
-	UpdatedAt string         `valid:"-" json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `valid:"-" json:"deletedAt" gorm:"index"`
-	Role      Role           `valid:"-" json:"role" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Id        uint           `json:"id" gorm:"primarykey"`
+	Name      string         `validate:"alphanum" json:"name"`
+	Password  string         `validate:"alphanum" json:"password"`
+	Email     string         `validate:"email" json:"email"`
+	RoleID    uint           `validate:"required" json:"roleId"`
+	CreatedAt string         `json:"createdAt"`
+	UpdatedAt string         `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
+	Role      Role           `json:"role" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+}
+
+type UserLogin struct {
+	Password string `validate:"alphanum" json:"password"`
+	Email    string `validate:"email" json:"email"`
+	Token    string `json:"token"`
 }

@@ -9,7 +9,7 @@ import (
 // RoleService interface
 type RoleService interface {
 	Transaction() (response *gorm.DB)
-	FindOne(Body *models.Role, RoleID string) (response *gorm.DB)
+	FindOne(Body *models.Role, RoleID uint) (response *gorm.DB)
 }
 
 // NewRoleService Instantiate Model of Role
@@ -33,7 +33,7 @@ func (fn *roleService) Transaction() (tx *gorm.DB) {
 }
 
 // FindOne function to get all role list
-func (fn *roleService) FindOne(Role *models.Role, RoleID string) (response *gorm.DB) {
+func (fn *roleService) FindOne(Role *models.Role, RoleID uint) (response *gorm.DB) {
 	response = database.DB.Find(&Role, RoleID)
 	return response
 }

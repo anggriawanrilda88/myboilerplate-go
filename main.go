@@ -8,7 +8,6 @@ import (
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/migration"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/middleware"
 	configuration "github.com/anggriawanrilda88/myboilerplate/config"
-	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/session/v2"
 	hashing "github.com/thomasvvugt/fiber-hashing"
 
@@ -35,10 +34,6 @@ type App struct {
 
 	Hasher  hashing.Driver
 	Session *session.Session
-}
-
-func init() {
-	govalidator.SetFieldsRequiredByDefault(true)
 }
 
 func main() {
@@ -78,7 +73,7 @@ func main() {
 	}
 
 	// Create a /api endpoint from appFiber module
-	module.RegisterRoute(app.App, config.Viper)
+	module.RegisterRoute(app.App)
 
 	// Listen on port from env
 	port := config.GetString("APP_ADDR")

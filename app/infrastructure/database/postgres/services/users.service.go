@@ -10,6 +10,7 @@ import (
 type UsersService interface {
 	Transaction() (response *gorm.DB)
 	Create(Body *models.User) (response *gorm.DB)
+	FindOne(User *models.User, Login *models.UserLogin) (response *gorm.DB)
 
 	// // create with transaction
 	// Create(tx *gorm.DB, Body *models.User) (response *gorm.DB)
@@ -38,6 +39,12 @@ func (fn *usersService) Transaction() (tx *gorm.DB) {
 // Create function to get all users list
 func (fn *usersService) Create(Body *models.User) (response *gorm.DB) {
 	response = database.DB.Create(&Body)
+	return response
+}
+
+// FindOne function to get all users list
+func (fn *usersService) FindOne(User *models.User, Login *models.UserLogin) (response *gorm.DB) {
+	response = database.DB.Find(&User, Login)
 	return response
 }
 

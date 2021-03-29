@@ -119,6 +119,9 @@ func (config *Config) SetErrorHandler(errorHandler fiber.ErrorHandler) {
 }
 
 func (config *Config) setDefaults() {
+	// Set default secret key JWT token
+	config.SetDefault("JWT_SECRET", "secret")
+
 	// Set default App configuration
 	config.SetDefault("APP_ADDR", ":5000")
 	config.SetDefault("APP_ENV", "local")
