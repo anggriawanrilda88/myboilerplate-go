@@ -3,7 +3,7 @@ package users
 import (
 	"errors"
 
-	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/default/v1"
+	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/admin/v1"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
 	"github.com/go-playground/validator"

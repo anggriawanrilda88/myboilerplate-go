@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/alexedwards/argon2id v0.0.0-20201228115903-cf543ebc1f7b
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/fasthttp/session/v2 v2.3.0
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/go-playground/validator v9.31.0+incompatible
