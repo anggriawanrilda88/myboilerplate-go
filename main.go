@@ -47,7 +47,7 @@ func main() {
 	// Add middleware
 	app.registerMiddlewares(config)
 
-	// Connected with database
+	// Connected with database postgresql
 	db, err := database.New(&database.DbConfig{
 		Driver:   config.GetString("DB_DRIVER"),
 		Host:     config.GetString("DB_HOST"),
@@ -70,6 +70,17 @@ func main() {
 				return
 			}
 		}
+	}
+
+	// Connected with database postgresql
+	err = database.NewRedis(&database.RedisConfig{
+		Addr:     config.GetString("CACHE_REDIS_ADDR"),
+		Password: config.GetString("CACHE_REDIS_PASSWORD"),
+		DB:       config.GetInt("CACHE_REDIS_DB"),
+	})
+
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	// Create a /api endpoint from appFiber module

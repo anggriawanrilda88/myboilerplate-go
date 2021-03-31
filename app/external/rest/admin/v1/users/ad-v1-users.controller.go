@@ -1,8 +1,6 @@
 package users
 
 import (
-	"errors"
-
 	usecases "github.com/anggriawanrilda88/myboilerplate/app/application/usecase/admin/v1"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
@@ -17,6 +15,7 @@ type UsersController interface {
 	// GetUser(DB *database.Database) fiber.Handler
 	Create(api fiber.Router) fiber.Handler
 	LoginUser(api fiber.Router) fiber.Handler
+	Find(api fiber.Router) fiber.Handler
 	// EditUser(DB *database.Database) fiber.Handler
 	// DeleteUser(DB *database.Database) fiber.Handler
 }
@@ -37,25 +36,44 @@ type usersController struct {
 var validate *validator.Validate
 
 // Create a single user to the database
+func (fn *usersController) Find(api fiber.Router) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		//get usecase users
+		var Users []models.User
+		response, err := fn.usersUsecase.Find(ctx, Users)
+		if err != nil {
+			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
+		}
+
+		err = ctx.JSON(response)
+
+		return err
+	}
+}
+
+// Create a single user to the database
 func (fn *usersController) Create(api fiber.Router) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		//set body to struct
 		Body := new(models.User)
 		err := ctx.BodyParser(Body)
 		if err != nil {
-			err = errors.New("Cannot unmarshal request body, wrong type data.")
-			return err
+			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, "Cannot unmarshal request body, wrong type data.")
 		}
 
 		//validate request body
 		err = validator.New().Struct(Body)
 		if err != nil {
-			return err
+			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
 		}
 
 		//get usecase users
 		err = fn.usersUsecase.Create(ctx, Body)
-		return err
+		if err != nil {
+			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
+		}
+
+		return ctx.JSON(Body)
 	}
 }
 

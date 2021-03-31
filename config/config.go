@@ -159,6 +159,11 @@ func (config *Config) setDefaults() {
 	config.SetDefault("SESSION_SECURE", false)
 	config.SetDefault("SESSION_GCINTERVAL", "1m")
 
+	// Set default session configuration
+	config.SetDefault("CACHE_REDIS_ADDR", "db-dev:6379")
+	config.SetDefault("CACHE_REDIS_PASSWORD", "")
+	config.SetDefault("CACHE_REDIS_DB", 0)
+
 	// Set default Fiber configuration
 	config.SetDefault("FIBER_PREFORK", false)
 	config.SetDefault("FIBER_SERVERHEADER", "")

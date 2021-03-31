@@ -23,5 +23,6 @@ func registerUsersV1(api fiber.Router, app *fiber.App) {
 	// route.Get("/", customers.NewUsersController().GetAllUsers(DB))
 	// route.Get("/:id", customers.NewUsersController().GetUser(DB))
 	route.Post("/", customers.NewUsersController().Create(api))
+	route.Get("/", customers.NewUsersController().Find(api))
 	route.Post("/login", customers.NewUsersController().LoginUser(api))
 }

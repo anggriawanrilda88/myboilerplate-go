@@ -1,9 +1,12 @@
 package database
 
 import (
+	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlserver"
@@ -11,6 +14,7 @@ import (
 )
 
 var DB *gorm.DB
+var Redis *redis.Client
 
 // DbConfig for setting connection configuration
 type DbConfig struct {
@@ -22,12 +26,36 @@ type DbConfig struct {
 	Database string
 }
 
+// DbConfig for setting connection configuration
+type RedisConfig struct {
+	Addr     string
+	Password string
+	DB       int
+}
+
 // Database set variable struct fo db
 type Database struct {
 	*gorm.DB
 }
 
 // New connection function call on root go
+func NewRedis(config *RedisConfig) (err error) {
+	// add redis connection
+	Redis = redis.NewClient(&redis.Options{
+		Addr:     config.Addr,
+		Password: config.Password,
+		DB:       config.DB,
+	})
+
+	_, err = Redis.Ping(context.Background()).Result()
+	if err != nil {
+		fmt.Println("failed to connect redis:", err.Error())
+		return
+	}
+
+	return
+}
+
 func New(config *DbConfig) (*Database, error) {
 	var err error
 	switch strings.ToLower(config.Driver) {

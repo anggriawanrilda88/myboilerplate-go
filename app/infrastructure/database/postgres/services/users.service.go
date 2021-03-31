@@ -1,8 +1,14 @@
 package services
 
 import (
+	"encoding/json"
+	"log"
+	"strconv"
+
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
+	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -10,7 +16,9 @@ import (
 type UsersService interface {
 	Transaction() (response *gorm.DB)
 	Create(Body *models.User) (response *gorm.DB)
-	FindOne(User *models.User, Login *models.UserLogin) (response *gorm.DB)
+	Login(User *models.User, Login *models.UserLogin) (response *gorm.DB)
+	FindOne(User *models.User, id uint) (response *gorm.DB)
+	Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error)
 
 	// // create with transaction
 	// Create(tx *gorm.DB, Body *models.User) (response *gorm.DB)
@@ -42,10 +50,49 @@ func (fn *usersService) Create(Body *models.User) (response *gorm.DB) {
 	return response
 }
 
-// FindOne function to get all users list
-func (fn *usersService) FindOne(User *models.User, Login *models.UserLogin) (response *gorm.DB) {
+// FindOne function to get users list
+func (fn *usersService) Login(User *models.User, Login *models.UserLogin) (response *gorm.DB) {
 	response = database.DB.Find(&User, Login)
 	return response
+}
+
+// FindOne function to get users list
+func (fn *usersService) FindOne(User *models.User, id uint) (response *gorm.DB) {
+	response = database.DB.Find(&User, id)
+	return response
+}
+
+// FindOne function to get all users list
+func (fn *usersService) Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error) {
+	var version int
+	database.DB.Raw("select sum(version) as version from users").Scan(&version)
+	strVersion := strconv.Itoa(version)
+	cache := helper.GetCache(ctx, strVersion)
+	if cache.Err() != nil {
+		if cache.Err().Error() == "redis: nil" {
+			response := database.DB.Find(&Users)
+			if response.Error != nil {
+				err = response.Error
+				return
+			}
+			err = helper.SetCache(ctx, strVersion, Users)
+			if err != nil {
+				return
+			}
+
+			data = Users
+			log.Println("dari postgres loo")
+			return
+		}
+		return
+	}
+
+	byte, err := cache.Bytes()
+	err = json.Unmarshal(byte, &Users)
+	data = Users
+	log.Println("dari redis loo")
+
+	return
 }
 
 // // Create function to get all users list with transaction

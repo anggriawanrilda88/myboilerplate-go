@@ -12,6 +12,7 @@ type User struct {
 	UpdatedAt string         `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
 	Role      Role           `json:"role" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Version   uint           `json:"version"`
 }
 
 type UserLogin struct {
