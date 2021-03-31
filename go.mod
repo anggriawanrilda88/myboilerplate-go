@@ -18,6 +18,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/thomasvvugt/fiber-hashing v0.0.0-20200511145001-a62bb48860d5
 	go.uber.org/zap v1.16.0
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.0.5
 	gorm.io/driver/postgres v1.0.8
