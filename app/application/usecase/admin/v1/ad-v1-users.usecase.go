@@ -1,14 +1,11 @@
 package usecases
 
 import (
-	"errors"
 	"time"
 
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/services"
 	redisService "github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/redis/services"
-	configuration "github.com/anggriawanrilda88/myboilerplate/config"
-	"github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,7 +13,7 @@ import (
 type UsersUseCase interface {
 	Create(ctx *fiber.Ctx, Body *models.User) (err error)
 	Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, err error)
-	LoginUser(ctx *fiber.Ctx, User *models.User, UserLogin *models.UserLogin) (err error)
+	FindOne(ctx *fiber.Ctx, Users *models.User) (data interface{}, err error)
 }
 
 // NewUsersUseCase Instantiate the UseCase
@@ -32,50 +29,6 @@ type usersUseCase struct {
 	service           services.UsersService
 	serviceRole       services.RoleService
 	serviceRedisUsers redisService.UsersServiceRedis
-}
-
-// Create usecase Users
-func (fn *usersUseCase) LoginUser(ctx *fiber.Ctx, User *models.User, UserLogin *models.UserLogin) (err error) {
-	// get user info from service
-	if response := fn.service.Login(User, UserLogin); response.Error != nil {
-		return response.Error
-	}
-
-	// set error when user login not found
-	if User.Id == 0 {
-		err = errors.New("User Not Found")
-		return
-	}
-
-	// Match role to user
-	if User.RoleID != 0 {
-		Role := new(models.Role)
-		_ = fn.serviceRole.FindOne(Role, User.RoleID)
-		User.Role = *Role
-	}
-
-	config := configuration.New().Viper
-	secretKey := config.GetString("JWT_SECRET")
-
-	// Create token
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	// Set claims
-	claims := token.Claims.(jwt.MapClaims)
-	claims["name"] = "John Doe"
-	claims["admin"] = true
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte(secretKey))
-	if err != nil {
-		return err
-	}
-
-	// set token to struct
-	UserLogin.Token = t
-
-	return err
 }
 
 // Create usecase Users
@@ -113,6 +66,23 @@ func (fn *usersUseCase) Find(ctx *fiber.Ctx, Users []models.User) (data interfac
 	}
 
 	return response, nil
+}
+
+// Find usecase Users
+func (fn *usersUseCase) FindOne(ctx *fiber.Ctx, Users *models.User) (data interface{}, err error) {
+	id := ctx.Params("id")
+	if response := fn.service.FindOne(Users, id); response.Error != nil {
+		err = response.Error
+		return
+	}
+
+	if Users.RoleID != 0 {
+		Role := new(models.Role)
+		_ = fn.serviceRole.FindOne(Role, Users.RoleID)
+		Users.Role = *Role
+	}
+
+	return Users, nil
 }
 
 // // Create usecase Users with transaction

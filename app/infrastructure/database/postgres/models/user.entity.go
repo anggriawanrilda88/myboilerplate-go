@@ -14,9 +14,3 @@ type User struct {
 	Role      Role           `json:"role" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	Version   uint           `json:"version"`
 }
-
-type UserLogin struct {
-	Password string `validate:"alphanum" json:"password"`
-	Email    string `validate:"email" json:"email"`
-	Token    string `json:"token"`
-}

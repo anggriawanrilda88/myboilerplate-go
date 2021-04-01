@@ -18,7 +18,7 @@ func JWTAuthentication() (err fiber.Handler) {
 				//skiped list route and method
 				var allowedRPC = []string{
 					"/api/v1/users.POST",
-					"/api/v1/users/login.POST",
+					"/api/v1/auth/login.POST",
 				}
 
 				//fungsi untuk allowed api berdasarkan list

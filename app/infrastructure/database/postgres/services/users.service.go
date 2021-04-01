@@ -16,8 +16,7 @@ import (
 type UsersService interface {
 	Transaction() (response *gorm.DB)
 	Create(Body *models.User) (response *gorm.DB)
-	Login(User *models.User, Login *models.UserLogin) (response *gorm.DB)
-	FindOne(User *models.User, id uint) (response *gorm.DB)
+	FindOne(Users *models.User, data interface{}) (response *gorm.DB)
 	Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error)
 
 	// // create with transaction
@@ -51,14 +50,8 @@ func (fn *usersService) Create(Body *models.User) (response *gorm.DB) {
 }
 
 // FindOne function to get users list
-func (fn *usersService) Login(User *models.User, Login *models.UserLogin) (response *gorm.DB) {
-	response = database.DB.Find(&User, Login)
-	return response
-}
-
-// FindOne function to get users list
-func (fn *usersService) FindOne(User *models.User, id uint) (response *gorm.DB) {
-	response = database.DB.Find(&User, id)
+func (fn *usersService) FindOne(Users *models.User, data interface{}) (response *gorm.DB) {
+	response = database.DB.Find(&Users, data)
 	return response
 }
 
