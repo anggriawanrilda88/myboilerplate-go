@@ -1,9 +1,10 @@
 package services
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
