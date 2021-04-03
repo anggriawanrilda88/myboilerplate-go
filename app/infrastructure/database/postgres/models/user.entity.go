@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	Id        uint           `json:"id" gorm:"primarykey"`
@@ -11,6 +14,6 @@ type User struct {
 	CreatedAt string         `json:"createdAt"`
 	UpdatedAt string         `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
-	Role      Role           `json:"role" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Role      datatypes.JSON `json:"role"`
 	Version   uint           `json:"version"`
 }

@@ -1,11 +1,16 @@
 package usecases
 
 import (
+	"log"
+	"strconv"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/services"
 	redisService "github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/redis/services"
+	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -43,7 +48,7 @@ func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 	if Body.RoleID != 0 {
 		Role := new(models.Role)
 		_ = fn.serviceRole.FindOne(Role, Body.RoleID)
-		Body.Role = *Role
+		// Body.Role = *Role
 	}
 
 	return err
@@ -51,21 +56,40 @@ func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 
 // Find usecase Users
 func (fn *usersUseCase) Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, err error) {
-	response, err := fn.service.Find(ctx, Users)
+	count, err := fn.service.GetVersionCount()
 	if err != nil {
 		return
 	}
 
-	for index, User := range response {
-		// Match role to user
-		if User.RoleID != 0 {
-			Role := new(models.Role)
-			_ = fn.serviceRole.FindOne(Role, User.RoleID)
-			response[index].Role = *Role
+	// set redis cache
+	strVersion := strconv.Itoa(int(count))
+	cache := helper.GetCache(ctx, strVersion)
+	if cache.Err() != nil {
+		if cache.Err().Error() == "redis: nil" {
+			responseUsers, err2 := fn.service.Find(ctx, Users)
+			if err2 != nil {
+				return nil, err2
+			}
+
+			err2 = helper.SetCache(ctx, strVersion, responseUsers)
+			if err2 != nil {
+				return nil, err2
+			}
+
+			log.Println("dari postgres loo")
+			return responseUsers, nil
 		}
+		return
 	}
 
-	return response, nil
+	byte, err := cache.Bytes()
+	err = jsoniter.Unmarshal(byte, &Users)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("dari redis loo")
+	return Users, nil
 }
 
 // Find usecase Users
@@ -79,7 +103,7 @@ func (fn *usersUseCase) FindOne(ctx *fiber.Ctx, Users *models.User) (data interf
 	if Users.RoleID != 0 {
 		Role := new(models.Role)
 		_ = fn.serviceRole.FindOne(Role, Users.RoleID)
-		Users.Role = *Role
+		// Users.Role = *Role
 	}
 
 	return Users, nil

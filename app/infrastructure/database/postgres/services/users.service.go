@@ -1,14 +1,8 @@
 package services
 
 import (
-	"log"
-	"strconv"
-
-	json "github.com/json-iterator/go"
-
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database/postgres/models"
-	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/helper"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -19,6 +13,7 @@ type UsersService interface {
 	Create(Body *models.User) (response *gorm.DB)
 	FindOne(Users *models.User, data interface{}) (response *gorm.DB)
 	Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error)
+	GetVersionCount() (count uint, err error)
 
 	// // create with transaction
 	// Create(tx *gorm.DB, Body *models.User) (response *gorm.DB)
@@ -56,37 +51,38 @@ func (fn *usersService) FindOne(Users *models.User, data interface{}) (response 
 	return response
 }
 
-// FindOne function to get all users list
-func (fn *usersService) Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error) {
-	var version int
-	database.DB.Raw("select sum(version) as version from users").Scan(&version)
-	strVersion := strconv.Itoa(version)
-	cache := helper.GetCache(ctx, strVersion)
-	if cache.Err() != nil {
-		if cache.Err().Error() == "redis: nil" {
-			response := database.DB.Find(&Users)
-			if response.Error != nil {
-				err = response.Error
-				return
-			}
-			err = helper.SetCache(ctx, strVersion, Users)
-			if err != nil {
-				return
-			}
-
-			data = Users
-			log.Println("dari postgres loo")
-			return
-		}
+// FindOne function to get users list
+func (fn *usersService) GetVersionCount() (count uint, err error) {
+	response := database.DB.Raw("select sum(version) as version from users").Scan(&count)
+	if response.Error != nil {
 		return
 	}
 
-	byte, err := cache.Bytes()
-	err = json.Unmarshal(byte, &Users)
-	data = Users
-	log.Println("dari redis loo")
-
 	return
+}
+
+// FindOne function to get all users list
+func (fn *usersService) Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error) {
+	response := database.DB.Raw(`select  
+					A.id,
+					A.created_at,
+					A.updated_at,
+					A.deleted_at,
+					A.name,
+					A.password,
+					A.email,
+					A.role_id,
+					A.version,
+					row_to_json(B.*)::jsonb as "role"
+				from users as A
+				join roles as B on A.role_id = B.id 
+				group by A.id, B.id`).Scan(&Users)
+	if response.Error != nil {
+		err = response.Error
+		return
+	}
+
+	return Users, nil
 }
 
 // // Create function to get all users list with transaction

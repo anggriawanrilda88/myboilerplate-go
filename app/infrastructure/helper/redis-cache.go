@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"encoding/json"
+	json "github.com/json-iterator/go"
 
 	"github.com/anggriawanrilda88/myboilerplate/app/infrastructure/database"
 	"github.com/go-redis/redis/v8"

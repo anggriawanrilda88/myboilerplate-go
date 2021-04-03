@@ -49,7 +49,7 @@ func (fn *authUseCase) Login(ctx *fiber.Ctx, User *models.User, UserLogin *model
 	if User.RoleID != 0 {
 		Role := new(models.Role)
 		_ = fn.serviceRole.FindOne(Role, User.RoleID)
-		User.Role = *Role
+		// User.Role = *Role
 	}
 
 	config := configuration.New().Viper
