@@ -13,7 +13,7 @@ type UsersService interface {
 	Create(Body *models.User) (response *gorm.DB)
 	FindOne(Users *models.User, data interface{}) (response *gorm.DB)
 	Find(ctx *fiber.Ctx, Users []models.User) (data []models.User, err error)
-	GetVersionCount() (count uint, err error)
+	GetVersionCount() (version uint, count uint, err error)
 
 	// // create with transaction
 	// Create(tx *gorm.DB, Body *models.User) (response *gorm.DB)
@@ -52,11 +52,19 @@ func (fn *usersService) FindOne(Users *models.User, data interface{}) (response 
 }
 
 // FindOne function to get users list
-func (fn *usersService) GetVersionCount() (count uint, err error) {
-	response := database.DB.Raw("select sum(version) as version from users").Scan(&count)
+func (fn *usersService) GetVersionCount() (version uint, count uint, err error) {
+	type Count struct {
+		Version uint `json:"version"`
+		Count   uint `json:"count"`
+	}
+	countData := new(Count)
+	response := database.DB.Raw("select sum(version) as version, count(id) as count from users").Scan(&countData)
 	if response.Error != nil {
 		return
 	}
+
+	version = countData.Version
+	count = countData.Count
 
 	return
 }
@@ -84,9 +92,3 @@ func (fn *usersService) Find(ctx *fiber.Ctx, Users []models.User) (data []models
 
 	return Users, nil
 }
-
-// // Create function to get all users list with transaction
-// func (fn *usersService) Create(tx *gorm.DB, Body *models.User) (response *gorm.DB) {
-// 	response = tx.Create(&Body)
-// 	return response
-// }

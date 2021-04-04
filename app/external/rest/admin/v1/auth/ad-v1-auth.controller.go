@@ -18,13 +18,13 @@ type AuthController interface {
 func NewAuthController() AuthController {
 	return &authController{
 		authUsecase:   usecases.NewAuthUseCase(),
-		userTransform: NewAuthTransform(),
+		authTransform: NewAuthTransform(),
 	}
 }
 
 type authController struct {
 	authUsecase   usecases.AuthUseCase
-	userTransform AuthTransform
+	authTransform AuthTransform
 }
 
 var validate *validator.Validate
@@ -50,7 +50,7 @@ func (fn *authController) Login(api fiber.Router) fiber.Handler {
 			return helper.ErrorHandler(ctx, fiber.ErrForbidden, 400, err.Error())
 		}
 
-		transform := fn.userTransform.DetailTransform(ctx, fiber.Map{"user": User, "token": UserLogin.Token})
+		transform := fn.authTransform.DetailTransform(ctx, fiber.Map{"user": User, "token": UserLogin.Token})
 		return ctx.JSON(transform)
 	}
 }

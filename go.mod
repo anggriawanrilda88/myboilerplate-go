@@ -16,6 +16,7 @@ require (
 	github.com/jameskeane/bcrypt v0.0.0-20120420032655-c3cd44c1e20f
 	github.com/json-iterator/go v1.1.10
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/olivere/elastic/v7 v7.0.23 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/thomasvvugt/fiber-hashing v0.0.0-20200511145001-a62bb48860d5
 	go.uber.org/zap v1.16.0

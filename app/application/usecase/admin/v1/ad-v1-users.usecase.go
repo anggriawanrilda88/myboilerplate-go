@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 	"time"
@@ -17,7 +18,7 @@ import (
 // UsersUseCase interface
 type UsersUseCase interface {
 	Create(ctx *fiber.Ctx, Body *models.User) (err error)
-	Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, err error)
+	Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, count uint, err error)
 	FindOne(ctx *fiber.Ctx, Users *models.User) (data interface{}, err error)
 }
 
@@ -40,6 +41,7 @@ type usersUseCase struct {
 func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 	Body.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	Body.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	Body.Version = 1
 	if response := fn.service.Create(Body); response.Error != nil {
 		return response.Error
 	}
@@ -47,37 +49,44 @@ func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
 	// Match role to user
 	if Body.RoleID != 0 {
 		Role := new(models.Role)
-		_ = fn.serviceRole.FindOne(Role, Body.RoleID)
-		// Body.Role = *Role
+		res := fn.serviceRole.FindOne(Role, Body.RoleID)
+		if res.Error != nil {
+			return res.Error
+		}
+
+		Body.Role, err = json.Marshal(Role)
+		if err != nil {
+			return err
+		}
 	}
 
 	return err
 }
 
 // Find usecase Users
-func (fn *usersUseCase) Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, err error) {
-	count, err := fn.service.GetVersionCount()
+func (fn *usersUseCase) Find(ctx *fiber.Ctx, Users []models.User) (data interface{}, count uint, err error) {
+	version, count, err := fn.service.GetVersionCount()
 	if err != nil {
 		return
 	}
 
-	// set redis cache
-	strVersion := strconv.Itoa(int(count))
+	// get list with redis cache
+	strVersion := strconv.Itoa(int(version))
 	cache := helper.GetCache(ctx, strVersion)
 	if cache.Err() != nil {
 		if cache.Err().Error() == "redis: nil" {
 			responseUsers, err2 := fn.service.Find(ctx, Users)
 			if err2 != nil {
-				return nil, err2
+				return nil, 0, err2
 			}
 
 			err2 = helper.SetCache(ctx, strVersion, responseUsers)
 			if err2 != nil {
-				return nil, err2
+				return nil, 0, err2
 			}
 
 			log.Println("dari postgres loo")
-			return responseUsers, nil
+			return responseUsers, count, nil
 		}
 		return
 	}
@@ -85,11 +94,11 @@ func (fn *usersUseCase) Find(ctx *fiber.Ctx, Users []models.User) (data interfac
 	byte, err := cache.Bytes()
 	err = jsoniter.Unmarshal(byte, &Users)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	log.Println("dari redis loo")
-	return Users, nil
+	return Users, count, nil
 }
 
 // Find usecase Users
@@ -100,47 +109,19 @@ func (fn *usersUseCase) FindOne(ctx *fiber.Ctx, Users *models.User) (data interf
 		return
 	}
 
+	// Match role to user
 	if Users.RoleID != 0 {
 		Role := new(models.Role)
-		_ = fn.serviceRole.FindOne(Role, Users.RoleID)
-		// Users.Role = *Role
+		res := fn.serviceRole.FindOne(Role, Users.RoleID)
+		if res.Error != nil {
+			return nil, res.Error
+		}
+
+		Users.Role, err = json.Marshal(Role)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return Users, nil
 }
-
-// // Create usecase Users with transaction
-// func (fn *usersUseCase) Create(ctx *fiber.Ctx, Body *models.User) (err error) {
-// 	// begin transaction
-// 	tx := fn.service.Transaction()
-// 	if err := tx.Error; err != nil {
-// 		return err
-// 	}
-
-// 	Body.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-// 	Body.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-// 	if err = fn.service.Create(tx, Body).Error; err != nil {
-// 		tx.Rollback()
-// 		return err
-// 	}
-
-// 	// Match role to user
-// 	if Body.RoleID != "" {
-// 		Role := new(models.Role)
-// 		err = tx.Find(&Role, Body.RoleID).Error
-// 		if err != nil {
-// 			tx.Rollback()
-// 			return err
-// 		}
-// 		Body.Role = *Role
-// 	}
-
-// 	// create json from response db
-// 	err = ctx.JSON(Body)
-
-// 	// commit if not error
-// 	if err == nil {
-// 		tx.Commit()
-// 	}
-// 	return err
-// }

@@ -53,7 +53,8 @@ func (fn *usersController) Create(api fiber.Router) fiber.Handler {
 			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
 		}
 
-		return ctx.JSON(Body)
+		transform := fn.userTransform.DetailTransform(Body, 10, 0, 1)
+		return ctx.JSON(transform)
 	}
 }
 
@@ -62,14 +63,13 @@ func (fn *usersController) Find(api fiber.Router) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		//get usecase users
 		var Users []models.User
-		response, err := fn.usersUsecase.Find(ctx, Users)
+		response, count, err := fn.usersUsecase.Find(ctx, Users)
 		if err != nil {
 			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
 		}
 
-		err = ctx.JSON(response)
-
-		return err
+		transform := fn.userTransform.DetailTransform(response, 10, 0, count)
+		return ctx.JSON(transform)
 	}
 }
 
@@ -83,8 +83,7 @@ func (fn *usersController) FindOne(api fiber.Router) fiber.Handler {
 			return helper.ErrorHandler(ctx, fiber.ErrInternalServerError, 400, err.Error())
 		}
 
-		err = ctx.JSON(response)
-
-		return err
+		transform := fn.userTransform.DetailTransform(response, 10, 0, 1)
+		return ctx.JSON(transform)
 	}
 }

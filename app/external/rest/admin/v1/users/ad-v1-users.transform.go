@@ -4,7 +4,7 @@ import "github.com/gofiber/fiber/v2"
 
 // UsersTransform interface
 type UsersTransform interface {
-	DetailTransform(ctx *fiber.Ctx, data map[string]interface{}) map[string]interface{}
+	DetailTransform(data interface{}, limit uint, skip uint, total uint) map[string]interface{}
 }
 
 // NewUsersTransform Instantiate the Transform
@@ -15,13 +15,13 @@ func NewUsersTransform() UsersTransform {
 type usersTransform struct {
 }
 
-func (fn *usersTransform) DetailTransform(ctx *fiber.Ctx, data map[string]interface{}) map[string]interface{} {
+func (fn *usersTransform) DetailTransform(data interface{}, limit uint, skip uint, total uint) map[string]interface{} {
 	return fiber.Map{
 		"data": data,
 		"meta": fiber.Map{
-			"limit": 10,
-			"total": 1,
-			"skip":  0,
+			"limit": limit,
+			"total": total,
+			"skip":  skip,
 		},
 	}
 }

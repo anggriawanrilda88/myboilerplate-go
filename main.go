@@ -24,7 +24,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	recoverFiber "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 )
 
@@ -132,7 +132,7 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 
 	// Middleware - Recover
 	if config.GetBool("MW_FIBER_RECOVER_ENABLED") {
-		app.Use(recover.New())
+		app.Use(recoverFiber.New())
 	}
 
 	// Middleware - Cache
