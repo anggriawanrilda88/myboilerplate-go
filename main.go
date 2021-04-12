@@ -14,13 +14,10 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/expvar"
-	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
@@ -72,7 +69,7 @@ func main() {
 		}
 	}
 
-	// Connected with database postgresql
+	// Connected with Redis
 	err = database.NewRedis(&database.RedisConfig{
 		Addr:     config.GetString("CACHE_REDIS_ADDR"),
 		Password: config.GetString("CACHE_REDIS_PASSWORD"),
@@ -116,32 +113,32 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 		app.Use(middleware.ForceTrailingSlash())
 	}
 
-	// Middleware - HSTS
-	if config.GetBool("MW_HSTS_ENABLED") {
-		app.Use(middleware.HSTS(&middleware.HSTSConfig{
-			MaxAge:            config.GetInt("MW_HSTS_MAXAGE"),
-			IncludeSubdomains: config.GetBool("MW_HSTS_INCLUDESUBDOMAINS"),
-			Preload:           config.GetBool("MW_HSTS_PRELOAD"),
-		}))
-	}
+	// // Middleware - HSTS
+	// if config.GetBool("MW_HSTS_ENABLED") {
+	// 	app.Use(middleware.HSTS(&middleware.HSTSConfig{
+	// 		MaxAge:            config.GetInt("MW_HSTS_MAXAGE"),
+	// 		IncludeSubdomains: config.GetBool("MW_HSTS_INCLUDESUBDOMAINS"),
+	// 		Preload:           config.GetBool("MW_HSTS_PRELOAD"),
+	// 	}))
+	// }
 
-	// Middleware - Suppress WWW
-	if config.GetBool("MW_SUPPRESS_WWW_ENABLED") {
-		app.Use(middleware.SuppressWWW())
-	}
+	// // Middleware - Suppress WWW
+	// if config.GetBool("MW_SUPPRESS_WWW_ENABLED") {
+	// 	app.Use(middleware.SuppressWWW())
+	// }
 
 	// Middleware - Recover
 	if config.GetBool("MW_FIBER_RECOVER_ENABLED") {
 		app.Use(recoverFiber.New())
 	}
 
-	// Middleware - Cache
-	if config.GetBool("MW_FIBER_CACHE_ENABLED") {
-		app.Use(cache.New(cache.Config{
-			Expiration:   config.GetDuration("MW_FIBER_CACHE_EXPIRATION"),
-			CacheControl: config.GetBool("MW_FIBER_CACHE_CACHECONTROL"),
-		}))
-	}
+	// // Middleware - Cache
+	// if config.GetBool("MW_FIBER_CACHE_ENABLED") {
+	// 	app.Use(cache.New(cache.Config{
+	// 		Expiration:   config.GetDuration("MW_FIBER_CACHE_EXPIRATION"),
+	// 		CacheControl: config.GetBool("MW_FIBER_CACHE_CACHECONTROL"),
+	// 	}))
+	// }
 
 	// Middleware - Compress
 	if config.GetBool("MW_FIBER_COMPRESS_ENABLED") {
@@ -163,18 +160,18 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 		}))
 	}
 
-	// Middleware - CSRF
-	if config.GetBool("MW_FIBER_CSRF_ENABLED") {
-		app.Use(csrf.New(csrf.Config{
-			TokenLookup: config.GetString("MW_FIBER_CSRF_TOKENLOOKUP"),
-			Cookie: &fiber.Cookie{
-				Name:     config.GetString("MW_FIBER_CSRF_COOKIE_NAME"),
-				SameSite: config.GetString("MW_FIBER_CSRF_COOKIE_SAMESITE"),
-			},
-			CookieExpires: config.GetDuration("MW_FIBER_CSRF_COOKIE_EXPIRES"),
-			ContextKey:    config.GetString("MW_FIBER_CSRF_CONTEXTKEY"),
-		}))
-	}
+	// // Middleware - CSRF
+	// if config.GetBool("MW_FIBER_CSRF_ENABLED") {
+	// 	app.Use(csrf.New(csrf.Config{
+	// 		TokenLookup: config.GetString("MW_FIBER_CSRF_TOKENLOOKUP"),
+	// 		Cookie: &fiber.Cookie{
+	// 			Name:     config.GetString("MW_FIBER_CSRF_COOKIE_NAME"),
+	// 			SameSite: config.GetString("MW_FIBER_CSRF_COOKIE_SAMESITE"),
+	// 		},
+	// 		CookieExpires: config.GetDuration("MW_FIBER_CSRF_COOKIE_EXPIRES"),
+	// 		ContextKey:    config.GetString("MW_FIBER_CSRF_CONTEXTKEY"),
+	// 	}))
+	// }
 
 	// Middleware - ETag
 	if config.GetBool("MW_FIBER_ETAG_ENABLED") {
@@ -188,13 +185,13 @@ func (app *App) registerMiddlewares(config *configuration.Config) {
 		app.Use(expvar.New())
 	}
 
-	// Middleware - Favicon
-	if config.GetBool("MW_FIBER_FAVICON_ENABLED") {
-		app.Use(favicon.New(favicon.Config{
-			File:         config.GetString("MW_FIBER_FAVICON_FILE"),
-			CacheControl: config.GetString("MW_FIBER_FAVICON_CACHECONTROL"),
-		}))
-	}
+	// // Middleware - Favicon
+	// if config.GetBool("MW_FIBER_FAVICON_ENABLED") {
+	// 	app.Use(favicon.New(favicon.Config{
+	// 		File:         config.GetString("MW_FIBER_FAVICON_FILE"),
+	// 		CacheControl: config.GetString("MW_FIBER_FAVICON_CACHECONTROL"),
+	// 	}))
+	// }
 
 	// TODO: Middleware - Filesystem
 

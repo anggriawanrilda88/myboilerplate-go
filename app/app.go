@@ -1,4 +1,4 @@
-package module
+package app
 
 import (
 	"github.com/anggriawanrilda88/myboilerplate/app/external/rest/admin/v1/auth"
