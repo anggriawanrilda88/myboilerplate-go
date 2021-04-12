@@ -13,13 +13,19 @@ require (
 	github.com/gofiber/jwt/v2 v2.2.1
 	github.com/gofiber/session/v2 v2.0.2
 	github.com/gofiber/template v1.6.8
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/jameskeane/bcrypt v0.0.0-20120420032655-c3cd44c1e20f
 	github.com/json-iterator/go v1.1.10
 	github.com/leodido/go-urn v1.2.1 // indirect
+<<<<<<< HEAD
 	github.com/olivere/elastic/v7 v7.0.23
+=======
+	github.com/smartystreets/assertions v1.1.1 // indirect
+>>>>>>> 9e74aedfba9727fa0c8ebac4655ea1b515db1dfd
 	github.com/spf13/viper v1.7.1
 	github.com/thomasvvugt/fiber-hashing v0.0.0-20200511145001-a62bb48860d5
 	go.uber.org/zap v1.16.0
+	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/datatypes v1.0.0
